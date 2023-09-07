@@ -37,6 +37,7 @@ st.markdown('### Enter Investor and Investment Characteristics')
 st.markdown(
     """
     <style>
+
     .appview-container h1, .appview-container span, .appview-container label, .appview-container p, .appview-container {
       color: white !important;
     }
@@ -57,14 +58,16 @@ st.markdown(
         background-color: #a10000;
         color: white;
     }
+    .row-widget.stRadio > div {
+        flex-direction:row;
+    }
+    .row-widget.stRadio > div.label.div  {
+        background-color: #a10000 !important;
+    }
 
     span[data-baseweb=tag] {
         background-color: #02852b !important;
     }
-
-   [theme]
-    base="light"
-    primaryColor="#a10000"
 
     </style>
     """,
