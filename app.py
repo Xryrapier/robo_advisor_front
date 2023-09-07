@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import os
+import matplotlib.pyplot as plt
 import requests
-
+import time
 
 
 
@@ -31,74 +33,111 @@ features = {
 
 # Define the layout
 st.title('Robo Advisor Dashboard')
-
 st.markdown('### Enter Investor and Investment Characteristics')
+st.markdown(
+    """
+    <style>
+    .appview-container h1, .appview-container span, .appview-container label, .appview-container p, .appview-container {
+      color: white !important;
+    }
 
-age = st.slider('Age', min_value=features['AGE']['min'], max_value=features['AGE']['max'])
-gender = st.radio("Gender", ["Male", "Female"])
-marital_status = st.radio("Marital status", ["Married" , "Not married"])
-kids = st.slider('Number of children', min_value=0, max_value=9)
+    .appview-container {
+      background-image: url('https://4kwallpapers.com/images/wallpapers/purple-light-geometric-glowing-lines-minimalist-5k-5120x2880-6724.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
 
-education_levels = {
-    'No high school diploma': 1,
-    'High school diploma': 2,
-    'College in progress': 3,
-    'College degree or higher': 4
-}
-education = st.selectbox("Education", [""] + list(education_levels.keys()), index=0)
+    .row-widget.stButton {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
 
-occupation_levels = {
-    'Employee': 1,
-    'Self-employed or partnership': 2,
-    'Retired or disabled and +65': 3,
-    'Student, homemaker, or not working -65': 4,
-}
-occupation = st.selectbox("Occupation", [""] + list(occupation_levels.keys()), index=0)
+    .row-widget.stButton > button {
+        background-color: #a10000;
+        color: white;
+    }
 
-net_worth = st.text_input('Networth')
-income = st.text_input('Monthly income')
+    span[data-baseweb=tag] {
+        background-color: #02852b !important;
+    }
 
-savings_dict = {
-    'Have debts': 1,
-    'No saving, no debt': 2,
-    'Have savings': 3,
-}
-savings = st.selectbox("Savings", [""] + list(savings_dict.keys()), index=0)
+   [theme]
+    base="light"
+    primaryColor="#a10000"
 
-risk_willingness = st.checkbox("Are you willing to take risk?")
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-amount=st.text_input('Investment amount')
-n_days=st.text_input('Investment period')
-# Define dictionaries for gender and savings
-gender_dict = {
-    'Male': 1,
-    'Female': 2
-}
-marital_status_dict = {
-    'Married': 0,
-    'Not married': 1
-}
+left, right = st.columns(2)
 
-if marital_status == "Not married":
-    if kids !=0 :
-        FAMSTRUCT=1
-    else :
-        if age <55:
-            FAMSTRUCT=2
-        else:
-            FAMSTRUCT=3
-else:
-    if kids!=0 :
-        FAMSTRUCT=4
+with left:
+    age = st.slider('Age', min_value=features['AGE']['min'], max_value=features['AGE']['max'])
+    gender = st.radio("Gender", ["Male", "Female"])
+    marital_status = st.radio("Marital status", ["Married" , "Not married"])
+    kids = st.slider('Number of children', min_value=0, max_value=9)
+    risk_willingness = st.checkbox("Are you willing to take risk?")
+
+with right:
+    education_levels = {
+        'No high school diploma': 1,
+        'High school diploma': 2,
+        'College in progress': 3,
+        'College degree or higher': 4
+    }
+    education = st.selectbox("Education", [""] + list(education_levels.keys()), index=0)
+
+    occupation_levels = {
+        'Employee': 1,
+        'Self-employed or partnership': 2,
+        'Retired or disabled and +65': 3,
+        'Student, homemaker, or not working -65': 4,
+    }
+    occupation = st.selectbox("Occupation", [""] + list(occupation_levels.keys()), index=0)
+
+    savings_dict = {
+        'Have debts': 1,
+        'No saving, no debt': 2,
+        'Have savings': 3,
+    }
+    savings = st.selectbox("Savings", [""] + list(savings_dict.keys()), index=0)
+
+    net_worth = st.text_input('Networth')
+    income = st.text_input('Monthly income')
+
+    amount=st.text_input('Investment amount')
+    n_days=st.text_input('Investment period')
+
+    gender_dict = {
+        'Male': 1,
+        'Female': 2
+    }
+    marital_status_dict = {
+        'Married': 0,
+        'Not married': 1
+    }
+
+    if marital_status == "Not married":
+        if kids !=0 :
+            FAMSTRUCT=1
+        else :
+            if age <55:
+                FAMSTRUCT=2
+            else:
+                FAMSTRUCT=3
     else:
-        FAMSTRUCT=5
+        if kids!=0 :
+            FAMSTRUCT=4
+        else:
+            FAMSTRUCT=5
 
-# Calculate x_pred_data based on user inputs
 
 
 
+submit_button = st.button('Find my best portfolio and risk ')
 
-submit_button = st.button('Find my best portfolio and risk ', key='submit-asset_alloc_button' )
 if submit_button:
     x_pred_data=dict(
     HHSEX= gender_dict.get(gender, 0),
@@ -106,6 +145,7 @@ if submit_button:
     EDCL=education_levels.get(education, 0),
     MARRIED=marital_status_dict.get(marital_status, 0),
     KIDS=kids,
+
     FAMSTRUCT=FAMSTRUCT,
     OCCAT1=occupation_levels.get(occupation, 0),
     INCOME=float(income),
@@ -113,16 +153,32 @@ if submit_button:
     YESFINRISK=int(risk_willingness),
     NETWORTH=float(net_worth))
 
-
     robo_advisor_api_url = 'https://eficientfrontier-wjqgur6ida-ew.a.run.app/predict'
     response = requests.get(robo_advisor_api_url, params=x_pred_data)
     prediction = response.json()
-
     fin_pd=pd.DataFrame(prediction["fin_pd"])
     sigma =np.round(prediction["sigma"][0]*100,2)
     st.text_input('Risk tolerance (Scale of 100)', value=sigma, key='risk_tolerance_input')
 
-
     st.markdown('#### Asset Allocation and Portfolio Performance')
-    ticker_symbols = st.multiselect('Best assets for the portfolio', options=fin_pd["Ticker"] , default=fin_pd["Ticker"])
-    st.bar_chart(fin_pd.set_index('Ticker')['Number of actions'] ,  width=300 ,height=270,color="#ff4b4b")
+    st.multiselect('Best assets for the portfolio', options=fin_pd["Ticker"], default=fin_pd["Ticker"])
+
+    fin_pd['Number of actions'] = fin_pd['Number of actions'].apply(lambda x: int(x))
+    fin_pd.drop(columns = ['Weight'], inplace = True)
+
+    fig, ax = plt.subplots(figsize=(3, 2))
+    bars = ax.bar(fin_pd['Ticker'], fin_pd['Number of actions'], color="#02852b")
+    ax.set_xlabel('Ticker', fontsize=5)
+    ax.set_ylabel('Number of Stocks', fontsize=5)
+    ax.tick_params(axis='both', which='major', labelsize=5)
+
+    for i, bar in enumerate(bars):
+        height = bar.get_height()
+        ax.annotate(f'{height}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),
+                    textcoords="offset points",
+                    ha='center', va='bottom', fontsize=5)
+    new_max_y = fin_pd['Number of actions'].max() + 20
+    ax.set_ylim(0, new_max_y)
+
+    st.pyplot(fig)
