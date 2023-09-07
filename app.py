@@ -156,7 +156,7 @@ if submit_button:
     YESFINRISK=int(risk_willingness),
     NETWORTH=float(net_worth))
 
-    robo_advisor_api_url = 'https://eficientfrontierfinal-wjqgur6ida-ew.a.run.app/predict'
+    robo_advisor_api_url = 'https://eficientfrontier-wjqgur6ida-ew.a.run.app/predict'
     response = requests.get(robo_advisor_api_url, params=x_pred_data)
     prediction = response.json()
 
