@@ -57,14 +57,13 @@ st.markdown(
         background-color: #a10000;
         color: white;
     }
+    
+    .row-widget.stRadio > div {
+        flex-direction:row;
 
     span[data-baseweb=tag] {
         background-color: #02852b !important;
     }
-
-   [theme]
-    base="light"
-    primaryColor="#a10000"
 
     </style>
     """,
