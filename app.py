@@ -155,18 +155,21 @@ if submit_button:
     robo_advisor_api_url = 'https://eficientfrontier-wjqgur6ida-ew.a.run.app/predict'
     response = requests.get(robo_advisor_api_url, params=x_pred_data)
     prediction = response.json()
-    fin_pd=pd.DataFrame(prediction["fin_pd"])
+
+    res=pd.DataFrame(prediction["res"])
+
     sigma =np.round(prediction["sigma"][0]*100,2)
     st.text_input('Risk tolerance (Scale of 100)', value=sigma, key='risk_tolerance_input')
 
     st.markdown('#### Asset Allocation and Portfolio Performance')
-    st.multiselect('Best assets for the portfolio', options=fin_pd["Ticker"], default=fin_pd["Ticker"])
+    st.multiselect('Best assets for the portfolio', options=res["Ticker"], default=res["Ticker"])
 
-    fin_pd['Number of actions'] = fin_pd['Number of actions'].apply(lambda x: int(x))
-    fin_pd.drop(columns = ['Weight'], inplace = True)
+    res['Number of actions'] = res['Number of actions'].apply(lambda x: int(x))
+    res.drop(columns = ['Weight'], inplace = True)
+
 
     fig, ax = plt.subplots(figsize=(3, 2))
-    bars = ax.bar(fin_pd['Ticker'], fin_pd['Number of actions'], color="#02852b")
+    bars = ax.bar(res['Ticker'], res['Number of actions'], color="#02852b")
     ax.set_xlabel('Ticker', fontsize=5)
     ax.set_ylabel('Number of Stocks', fontsize=5)
     ax.tick_params(axis='both', which='major', labelsize=5)
@@ -177,7 +180,7 @@ if submit_button:
                     xytext=(0, 3),
                     textcoords="offset points",
                     ha='center', va='bottom', fontsize=5)
-    new_max_y = fin_pd['Number of actions'].max() + 20
+    new_max_y = res['Number of actions'].max() + 20
     ax.set_ylim(0, new_max_y)
 
     st.pyplot(fig)
