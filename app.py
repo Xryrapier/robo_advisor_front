@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import requests
 import time
 
-
-
 features = {
     'HHSEX': {'female': 0, 'male': 1},
     'AGE': {'min': 17, 'max': 95},
@@ -25,10 +23,6 @@ features = {
     'YESFINRISK': {'yes': 1, 'no': 0},
     'NETWORTH': {}
 }
-
-
-
-
 
 
 # Define the layout
@@ -57,18 +51,15 @@ st.markdown(
         background-color: #a10000;
         color: white;
     }
-    
-    .row-widget.stRadio > div {
-        flex-direction:row;
 
     span[data-baseweb=tag] {
         background-color: #02852b !important;
     }
-    
-     [theme]
+
+   [theme]
     base="light"
     primaryColor="#a10000"
-    
+
     </style>
     """,
     unsafe_allow_html=True
@@ -136,33 +127,32 @@ with right:
         else:
             FAMSTRUCT=5
 
-
-
-
 submit_button = st.button('Find my best portfolio and risk ')
 
 if submit_button:
-    x_pred_data=dict(
+    user_params=dict(
     HHSEX= gender_dict.get(gender, 0),
     AGE=age,
     EDCL=education_levels.get(education, 0),
     MARRIED=marital_status_dict.get(marital_status, 0),
     KIDS=kids,
-
     FAMSTRUCT=FAMSTRUCT,
     OCCAT1=occupation_levels.get(occupation, 0),
     INCOME=float(income),
     WSAVED=savings_dict.get(savings, 0),
     YESFINRISK=int(risk_willingness),
-    NETWORTH=float(net_worth))
+    NETWORTH=float(net_worth),
+    NDAYS=int(n_days),
+    AMOUNT=int(amount))
 
-    robo_advisor_api_url = 'https://eficientfrontier-wjqgur6ida-ew.a.run.app/predict'
-    response = requests.get(robo_advisor_api_url, params=x_pred_data)
+    robo_advisor_api_url = 'https://eficientfrontierfinal-wjqgur6ida-ew.a.run.app/predict'
+    response = requests.get(robo_advisor_api_url, params=user_params)
     prediction = response.json()
 
     res=pd.DataFrame(prediction["res"])
 
     sigma =np.round(prediction["sigma"][0]*100,2)
+    print(sigma)
     st.text_input('Risk tolerance (Scale of 100)', value=sigma, key='risk_tolerance_input')
 
     st.markdown('#### Asset Allocation and Portfolio Performance')
